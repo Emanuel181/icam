@@ -57,6 +57,14 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",  # Vue.js development server
     "http://127.0.0.1:8080",  # Alternative localhost
+    "http://localhost:5173",  # Adaugă frontend-ul aici
+    "http://127.0.0.1:5173",  # Dacă este accesat și pe 127.0.0.1
+]
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'Authorization',  # Permite antetul Authorization
+    'X-CSRFToken',
 ]
 
 

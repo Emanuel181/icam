@@ -3,17 +3,15 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 
-def generate_jwt(user, expires_in=60*60):  # Token expires in 1 hour
+def generate_jwt(user, expires_in=60*60):  # Expiră într-o oră
     payload = {
         'user_id': user.id,
         'username': user.username,
-        'role': user.profile.role,  # Add the role from UserProfile
+        'role': user.userprofile.role,  # Folosește profilul pentru a obține rolul
         'exp': datetime.utcnow() + timedelta(seconds=expires_in),
         'iat': datetime.utcnow(),
     }
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-
-
 
 def decode_jwt(token):
     try:
@@ -23,3 +21,4 @@ def decode_jwt(token):
         return {'error': 'Token has expired'}
     except jwt.InvalidTokenError:
         return {'error': 'Invalid token'}
+

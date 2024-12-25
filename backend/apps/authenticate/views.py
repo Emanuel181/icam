@@ -11,7 +11,6 @@ from ..utils.utils_jwt import generate_jwt, decode_jwt
 
 
 def jwt_required(roles=None):
-    # This returns a decorator
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
@@ -25,23 +24,23 @@ def jwt_required(roles=None):
             if 'error' in decoded:
                 return JsonResponse(decoded, status=401)
 
-            # Check roles, if specified
+            # Verifică rolurile (opțional)
             if roles and decoded.get('role') not in roles:
                 return JsonResponse({'error': 'Access denied: insufficient permissions'}, status=403)
 
-            # Attach user information to the request
+            # Adaugă informațiile utilizatorului în request
             request.user_id = decoded['user_id']
             request.username = decoded['username']
             return view_func(request, *args, **kwargs)
         return wrapper
     return decorator
 
-# Protected view accessible by all authenticated users
-@jwt_required()
+@jwt_required()  # Decorator pentru a verifica token-ul JWT
 def protected_view(request):
     return JsonResponse({
-        'message': f'Hello, user {request.user_id} ({request.username})!'
+        'message': f'Hello, user {request.user_id} ({request.username})! Your token is valid.'
     }, status=200)
+
 
 
 @jwt_required(roles=['mentor'])
@@ -82,38 +81,28 @@ from django.contrib.auth.models import User
 logger = logging.getLogger(__name__)
 
 def register_view(request):
-    try:
-        if request.method == 'POST':
-            import json
-
-            # Check for empty body
-            if not request.body:
-                return JsonResponse({'error': 'Request body is empty'}, status=400)
-
+    if request.method == 'POST':
+        import json
+        try:
             data = json.loads(request.body)
-
-            # Extract fields from JSON data
             username = data.get('username')
             password = data.get('password')
             role = data.get('role')
 
-            # Validate required fields
             if not username or not password or not role:
-                return JsonResponse({'error': 'All fields (username, password, role) are required'}, status=400)
+                return JsonResponse({'error': 'All fields are required'}, status=400)
 
-            # Check if the user already exists
             if User.objects.filter(username=username).exists():
                 return JsonResponse({'error': 'Username already exists'}, status=400)
 
-            # Create the user
+            # Create user
             user = User.objects.create_user(username=username, password=password)
             UserProfile.objects.create(user=user, role=role)
 
-            return JsonResponse({'message': 'User created successfully'}, status=201)
-        else:
-            return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+            return JsonResponse({'message': 'User registered successfully'}, status=201)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
+    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
 
 def get_csrf_token(request):
@@ -142,3 +131,5 @@ def refresh_token_view(request):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON format'}, status=400)
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+

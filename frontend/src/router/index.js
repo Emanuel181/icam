@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import LoginForm from "../components/LoginView.vue";
-import ProtectedPage from "../components/ProtectedView.vue";
+import ProtectedPage from "../components/RegisterView.vue";
 
 const routes = [
   {
