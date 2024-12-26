@@ -5,6 +5,7 @@ from functools import wraps
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 
 from ..ideas.models import UserProfile
 from ..utils.utils_jwt import generate_jwt, decode_jwt
@@ -52,7 +53,7 @@ def mentor_view(request):
 def student_view(request):
     return JsonResponse({'message': 'Welcome, student!'}, status=200)
 
-
+@csrf_protect
 def login_view(request):
     if request.method == 'POST':
         import json
@@ -105,6 +106,7 @@ def register_view(request):
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
 
+@ensure_csrf_cookie
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrfToken': csrf_token})

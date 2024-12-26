@@ -25,9 +25,6 @@ SECRET_KEY = 'django-insecure-h^u8a*fpng2!m3*%lmcd+wza@0zh$*efqsv4_*^kyr!5e%2v6c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'sslserver',
     'apps.ideas',
     'apps.authenticate',
     'rest_framework',
@@ -46,13 +44,14 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Add this
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",  # Vue.js development server
@@ -61,10 +60,32 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",  # Dacă este accesat și pe 127.0.0.1
 ]
 
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+
+# 4. Also allow the CSRF token header in the request.
 CORS_ALLOW_HEADERS = [
     'content-type',
-    'Authorization',  # Permite antetul Authorization
+    'Authorization',
     'X-CSRFToken',
+]
+
+
+# Allow cookies and credentials
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF settings
+CSRF_COOKIE_HTTPONLY = False  # Make the CSRF cookie accessible to JavaScript
+CSRF_COOKIE_SECURE = False    # Set to True if using HTTPS
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
 ]
 
 

@@ -8,20 +8,19 @@ const routes = [
     name: "Login",
     component: LoginForm,
   },
-  {
-    path: "/protected",
-    name: "ProtectedPage",
-    component: ProtectedPage,
-    beforeEnter: (to, from, next) => {
-      // Check if the user is authenticated
-      const token = localStorage.getItem("jwt_token");
-      if (token) {
-        next();
-      } else {
-        next("/");
-      }
+{
+        path: "/protected",
+        name: "ProtectedPage",
+        component: ProtectedPage,
+        beforeEnter: (to, from, next) => {
+            const token = localStorage.getItem("jwt_token");
+            if (token) {
+                next();  // Permite accesul
+            } else {
+                next("/");  // Redirecționează la pagina de login
+            }
+        },
     },
-  },
 ];
 
 const router = createRouter({

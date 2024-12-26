@@ -14,7 +14,6 @@
 import axiosInstance from '../axios.js';
 
 export default {
-  name: 'LoginForm',
   data() {
     return {
       username: '',
@@ -23,25 +22,26 @@ export default {
     };
   },
   methods: {
-async handleLogin() {
-    try {
-        const response = await axios.post('/auth/login/', {
-            username: this.username,
-            password: this.password,
+    async handleLogin() {
+      try {
+        // Fetch CSRF token
+        await axiosInstance.get('/auth/csrf-token/');
+
+        // Make the login request
+        const response = await axiosInstance.post('/auth/login/', {
+          username: this.username,
+          password: this.password,
         });
-        const token = response.data.token;
 
-        // Stochează token-ul în localStorage
-        localStorage.setItem('jwt_token', token);
+        // Store the JWT token
+        localStorage.setItem('jwt_token', response.data.token);
 
-        // Redirecționează utilizatorul către o pagină protejată
+        // Redirect user
         this.$router.push('/protected');
-    } catch (error) {
+      } catch (error) {
         this.errorMessage = error.response?.data?.error || 'An unexpected error occurred.';
-    }
-}
-
-
+      }
+    },
   },
 };
 
