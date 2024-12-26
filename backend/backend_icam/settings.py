@@ -25,8 +25,13 @@ SECRET_KEY = 'django-insecure-h^u8a*fpng2!m3*%lmcd+wza@0zh$*efqsv4_*^kyr!5e%2v6c
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Application definition
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
 
+
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,67 +40,28 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'sslserver',
+    'rest_framework',
     'apps.ideas',
     'apps.authenticate',
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Must come before CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Vue.js development server
-    "http://127.0.0.1:8080",  # Alternative localhost
-    "http://localhost:5173",  # Adaugă frontend-ul aici
-    "http://127.0.0.1:5173",  # Dacă este accesat și pe 127.0.0.1
-]
-
-
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
-
-# 4. Also allow the CSRF token header in the request.
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'Authorization',
-    'X-CSRFToken',
-]
-
-
-# Allow cookies and credentials
-CORS_ALLOW_CREDENTIALS = True
-
-# CSRF settings
-CSRF_COOKIE_HTTPONLY = False  # Make the CSRF cookie accessible to JavaScript
-CSRF_COOKIE_SECURE = False    # Set to True if using HTTPS
-CSRF_COOKIE_SAMESITE = 'Lax'
-
-
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-]
-
 
 ROOT_URLCONF = 'backend_icam.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],  # Path to templates folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -111,9 +77,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend_icam.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -121,13 +85,12 @@ DATABASES = {
         'USER': 'icam_user',
         'PASSWORD': 'parola',
         'HOST': 'localhost',
-        'PORT': '5432',  # Default PostgreSQL port
+        'PORT': '5432',
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -145,28 +108,59 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# Static files
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]  # Optional: Specify custom static directories
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # JWT configuration
 JWT_SECRET_KEY = 'your_very_secret_key'  # Replace with a strong secret key
-JWT_ALGORITHM = 'HS256'  # Standard JWT algorithm
+JWT_ALGORITHM = 'HS256'
+
+
+# CORS configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",  # Vue.js dev server
+    "http://127.0.0.1:8080",  # Alternative localhost
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",  # Alternative for Vite
+    "https://localhost"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://localhost"
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'Authorization',
+    'X-CSRFToken',
+]
+
+CSRF_COOKIE_HTTPONLY = False  # Allow CSRF cookie to be accessed by JavaScript
+# Allow the CSRF cookie to be sent with HTTPS cross-origin requests
+CSRF_COOKIE_SAMESITE = 'None'  # Explicitly allow cross-origin requests
+CSRF_COOKIE_SECURE = True      # Secure cookie is mandatory for SameSite=None when using HTTPS
+
+
+# Optional for API token-based auth
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
 

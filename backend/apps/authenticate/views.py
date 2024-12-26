@@ -4,8 +4,9 @@ from functools import wraps
 
 from django.contrib.auth import authenticate
 from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.middleware.csrf import get_token
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 
 from ..ideas.models import UserProfile
 from ..utils.utils_jwt import generate_jwt, decode_jwt
@@ -53,28 +54,23 @@ def mentor_view(request):
 def student_view(request):
     return JsonResponse({'message': 'Welcome, student!'}, status=200)
 
-@csrf_protect
+@csrf_exempt
 def login_view(request):
     if request.method == 'POST':
         import json
-        try:
-            data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
 
-            if not username or not password:
-                return JsonResponse({'error': 'Username and password are required'}, status=400)
+        user = authenticate(username=username, password=password)
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return JsonResponse({
+                'token': str(refresh.access_token),
+            })
+        return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
-            # Authenticate the user
-            user = authenticate(username=username, password=password)
-            if user:
-                token = generate_jwt(user)
-                return JsonResponse({'token': token}, status=200)
-            else:
-                return JsonResponse({'error': 'Invalid credentials'}, status=401)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
-    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
 
 
 from django.contrib.auth.models import User
