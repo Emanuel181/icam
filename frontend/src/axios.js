@@ -1,37 +1,47 @@
-// axios.js
-import axios from 'axios';
+import axios from "axios";
+import Cookies from "js-cookie";
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
-
-const axiosInstance = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // or whatever your API base is
-  withCredentials: true,               // important: ensures browser sends cookies
+// Create an Axios instance
+const instance = axios.create({
+  baseURL: "http://127.0.0.1:8000/api/", // General base URL
+  withCredentials: true, // Send cookies with requests
 });
 
-// Request interceptor: attach CSRF token to the headers
-axiosInstance.interceptors.request.use(
+// Set CSRF token from cookies
+instance.defaults.headers.common["X-CSRFToken"] = Cookies.get("csrftoken");
+
+// Add an interceptor to include the Authorization header for authenticated requests
+instance.interceptors.request.use(
   (config) => {
-    const csrftoken = getCookie('csrftoken');
-    if (csrftoken) {
-      config.headers['X-CSRFToken'] = csrftoken;
+    const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
+    if (token) {
+      config.headers.Authorization = `Token ${token}`; // Use 'Bearer' for JWTs
+    }
+
+    // Ensure correct headers for file uploads
+    if ((config.method === "post" || config.method === "put") && config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-export default axiosInstance;
+// Handle 401 errors globally (optional)
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const errorDetail = error.response?.data?.detail;
+      if (errorDetail === "Invalid token" || errorDetail === "Authentication credentials were not provided.") {
+        localStorage.removeItem("authToken");
+        window.location.href = "/login?message=Session expired. Please log in again.";
+      } else {
+        console.error("Unauthorized access:", error.response?.data);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default instance;
